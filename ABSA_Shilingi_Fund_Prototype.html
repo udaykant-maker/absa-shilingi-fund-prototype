@@ -1323,11 +1323,78 @@
             color: var(--absa-error-red);
             flex: 1;
         }
+
+        /* Screen Type Badge - Shows if screen is ABSA Mobile Banking or Vault22 WebView */
+        .screen-type-badge {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .screen-type-badge.mobile-banking {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+        }
+
+        .screen-type-badge.mobile-banking::before {
+            content: "📱 ";
+        }
+
+        .screen-type-badge.webview {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+        }
+
+        .screen-type-badge.webview::before {
+            content: "🌐 ";
+        }
+
+        /* Legend below phone */
+        .screen-legend {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.mobile-banking {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+        }
+
+        .legend-dot.webview {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
     </style>
 </head>
 <body>
     <!-- Phone Container -->
     <div class="phone-container">
+        <!-- Screen Type Badge - dynamically updated based on current screen -->
+        <div class="screen-type-badge mobile-banking" id="screenTypeBadge">ABSA Mobile Banking</div>
         <div class="phone-frame">
             <div class="phone-screen" id="phoneScreen">
 
@@ -4468,6 +4535,18 @@
         </div>
     </div>
 
+    <!-- Screen Type Legend -->
+    <div class="screen-legend">
+        <div class="legend-item">
+            <div class="legend-dot mobile-banking"></div>
+            <span><strong>ABSA Mobile Banking</strong> — Native app screens (3 screens)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot webview"></div>
+            <span><strong>Vault22 WebView</strong> — Embedded wealth platform (42 screens)</span>
+        </div>
+    </div>
+
     <!-- Screen Selector (Hidden - Press Ctrl+Shift+S) -->
     <div class="screen-selector" id="screenSelector">
         <div class="screen-selector-header">
@@ -4585,6 +4664,22 @@
 
     <script>
         // Screen Navigation
+        // ABSA Mobile Banking screens (native app) vs Vault22 WebView screens
+        const mobileBankingScreens = ['absa-home', 'investments-no-account', 'investments-has-account'];
+
+        function updateScreenTypeBadge(screenId) {
+            const badge = document.getElementById('screenTypeBadge');
+            if (!badge) return;
+
+            if (mobileBankingScreens.includes(screenId)) {
+                badge.className = 'screen-type-badge mobile-banking';
+                badge.textContent = 'ABSA Mobile Banking';
+            } else {
+                badge.className = 'screen-type-badge webview';
+                badge.textContent = 'Vault22 WebView';
+            }
+        }
+
         function goToScreen(screenId) {
             const screens = document.querySelectorAll('.screen');
             screens.forEach(s => s.classList.remove('active'));
@@ -4594,6 +4689,8 @@
                 targetScreen.classList.add('active');
                 // Update URL hash for navigation
                 window.location.hash = screenId;
+                // Update the screen type badge
+                updateScreenTypeBadge(screenId);
             }
             hideScreenSelector();
         }
@@ -4731,6 +4828,9 @@
             const hash = window.location.hash.slice(1);
             if (hash && document.getElementById(hash)) {
                 goToScreen(hash);
+            } else {
+                // Default screen is absa-home (ABSA Mobile Banking)
+                updateScreenTypeBadge('absa-home');
             }
         });
     </script>
